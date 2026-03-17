@@ -15,28 +15,41 @@ public class AttackState : IEnemyState
 
     public void Enter()
     {
-        // Code to execute when entering the AttackState
         Debug.Log("Enemy is attacking!");
     }
 
     public void Execute()
     {
-        // Code to execute while in the AttackState
-        if (!enemyAI.CanSeePlayer())
+        // Speler kan ontsnappen door uit zicht te gaan
+        if (!enemyAI.CanSeePlayer() && !enemyAI.CanHearPlayer())
+        {
+            enemyAI.ChangeState(new IdleState(enemyAI));
+            return;
+        }
+
+        // Teruggaan naar Alerted als niet meer gezien maar wel gehoord
+        if (!enemyAI.CanSeePlayer() && enemyAI.CanHearPlayer())
         {
             enemyAI.ChangeState(new AlertedState(enemyAI));
+            return;
         }
-        else if (enemyAI.IsPlayerInRange())
+
+        // Aanvallen als speler nog gezien wordt
+        if (enemyAI.CanSeePlayer())
         {
-            // Code to handle player capture and game over
-            Debug.Log("Player captured! Game Over.");
-            // Implement game over logic here
+            enemyAI.AttackPlayer();
+
+            // Check of speler gepakt is
+            if (enemyAI.IsPlayerInRange())
+            {
+                enemyAI.CapturePlayer();
+            }
         }
     }
 
     public void Exit()
     {
-        // Code to execute when exiting the AttackState
         Debug.Log("Enemy stopped attacking.");
     }
 }
+
