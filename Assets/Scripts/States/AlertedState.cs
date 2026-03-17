@@ -6,34 +6,56 @@ using UnityEngine;
 public class AlertedState : IEnemyState
 {
     private EnemyAI enemyAI;
+    private float alertDuration = 0f;
+    [SerializeField] private float alertTimeout = 5f; // Alert state max duration
 
     public AlertedState(EnemyAI enemyAI)
     {
         this.enemyAI = enemyAI;
+        alertDuration = 0f;
     }
 
     public void Enter()
     {
-        // Code to execute when entering the AlertedState
         Debug.Log("Enemy is alerted!");
+        alertDuration = 0f;
     }
 
     public void Execute()
     {
-        // Code to execute while in the AlertedState
+        alertDuration += Time.deltaTime;
+
+        // Direct attack als speler gezien
         if (enemyAI.CanSeePlayer())
         {
             enemyAI.ChangeState(new AttackState(enemyAI));
+            return;
         }
-        else if (!enemyAI.CanHearPlayer())
+
+        // Back to idle als niemand meer gehoord
+        if (!enemyAI.CanHearPlayer())
         {
             enemyAI.ChangeState(new IdleState(enemyAI));
+            return;
+        }
+
+        // Timeout: terug naar idle als te lang alerted zonder contact
+        if (alertDuration > alertTimeout)
+        {
+            enemyAI.ChangeState(new IdleState(enemyAI));
+            return;
+        }
+
+        // Navigeer naar speler als beschikbaar
+        Transform playerTransform = enemyAI.GetPlayerTransform();
+        if (playerTransform != null)
+        {
+            enemyAI.AttackPlayer(); // Hetzelfde als patrol, maar naar speler toe
         }
     }
 
     public void Exit()
     {
-        // Code to execute when exiting the AlertedState
         Debug.Log("Enemy is no longer alerted.");
     }
 }
