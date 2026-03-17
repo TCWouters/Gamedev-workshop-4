@@ -16,7 +16,10 @@ public class Timer : MonoBehaviour
 
     #endregion
     
-    private void Awake() => _timerText = GetComponent<TMP_Text>();
+    private void Awake(){
+         _timerText = GetComponent<TMP_Text>();
+         _isRunning = true;
+    }
 
     private void OnEnable()
     {
